@@ -1,0 +1,6 @@
+{
+  "name": "Bilingual Educational Scrum & Resource Manager",
+  "description": "An interactive and visually polished bilingual app for managing educational resources, lesson plans, and agile Scrum school workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
