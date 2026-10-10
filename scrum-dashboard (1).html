@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة إدارة مشروع الفريق - Scrum</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --todo: #ef4444;
+            --doing: #f59e0b;
+            --done: #10b981;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            direction: rtl;
+            overflow-x: hidden;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: backgroundPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Team Info Bar */
+        .team-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            animation: fadeIn 1s ease-out 0.3s backwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .info-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .info-card label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .info-card input, .info-card select {
+            width: 100%;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-card input:focus, .info-card select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Sprint Info Display */
+        .sprint-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .sprint-number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        /* Task Input Section */
+        .task-input-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border);
+            animation: fadeIn 1s ease-out 0.5s backwards;
+        }
+
+        .task-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .task-input-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-wrapper label {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .task-input {
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .add-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        .add-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Scrum Board */
+        .scrum-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out 0.7s backwards;
+        }
+
+        .column {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 2px solid var(--border);
+            min-height: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .column-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .column-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .todo .column-icon {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+        }
+
+        .doing .column-icon {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+        }
+
+        .done .column-icon {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+        }
+
+        .task-count {
+            background: var(--bg-main);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            min-height: 300px;
+        }
+
+        .task-card {
+            background: var(--bg-main);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            cursor: move;
+            transition: all 0.3s ease;
+            animation: taskSlideIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes taskSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .todo .task-card::before {
+            background: var(--todo);
+        }
+
+        .doing .task-card::before {
+            background: var(--doing);
+        }
+
+        .done .task-card::before {
+            background: var(--done);
+        }
+
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+
+        .task-card:hover::before {
+            width: 8px;
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .task-assigned {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .task-priority {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--todo);
+            color: var(--todo);
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--doing);
+            color: var(--doing);
+        }
+
+        .priority-low {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .task-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Tajawal', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .move-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--todo);
+            border: 1px solid var(--todo);
+        }
+
+        .task-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Statistics */
+        .stats-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            animation: fadeIn 1s ease-out 0.9s backwards;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-main);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-top: 2rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--bg-main);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 20px;
+            transition: width 0.5s ease;
+            animation: progressShine 2s ease-in-out infinite;
+        }
+
+        @keyframes progressShine {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .scrum-board {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .team-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Drag Over Effect */
+        .column.drag-over {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 لوحة إدارة مشروع الفريق</h1>
+            <p class="subtitle">نظام Scrum Agile للطلاب</p>
+        </header>
+
+        <!-- Team Info -->
+        <div class="team-info">
+            <div class="info-card">
+                <label>اسم الفريق</label>
+                <input type="text" id="teamName" placeholder="مثال: فريق الابتكار" value="فريق الابتكار">
+            </div>
+            <div class="info-card">
+                <label>اسم المشروع</label>
+                <input type="text" id="projectName" placeholder="مثال: تطبيق تعليمي" value="تطبيق تعليمي">
+            </div>
+            <div class="info-card">
+                <label>Sprint الحالي</label>
+                <div class="sprint-display">
+                    <span>سبرينت</span>
+                    <span class="sprint-number" id="sprintNumber">1</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <label>تاريخ الانتهاء</label>
+                <input type="date" id="deadline">
+            </div>
+        </div>
+
+        <!-- Task Input -->
+        <div class="task-input-section">
+            <div class="task-form">
+                <div class="task-input-group">
+                    <div class="input-wrapper">
+                        <label>المهمة</label>
+                        <input type="text" id="taskInput" class="task-input" placeholder="اكتب المهمة هنا...">
+                    </div>
+                    <div class="input-wrapper">
+                        <label>المسؤول</label>
+                        <input type="text" id="assignedTo" class="task-input" placeholder="اسم الطالب">
+                    </div>
+                    <div class="input-wrapper">
+                        <label>الأولوية</label>
+                        <select id="priority" class="task-input">
+                            <option value="high">عالية 🔴</option>
+                            <option value="medium" selected>متوسطة 🟡</option>
+                            <option value="low">منخفضة 🟢</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="add-btn" onclick="addTask()">+ إضافة مهمة</button>
+            </div>
+        </div>
+
+        <!-- Scrum Board -->
+        <div class="scrum-board">
+            <!-- To Do Column -->
+            <div class="column todo" id="todo" ondrop="drop(event, 'todo')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                <div class="column-header">
+                    <div class="column-title">
+                        <div class="column-icon">📋</div>
+                        <span>سأفعل</span>
+                    </div>
+                    <span class="task-count" id="todoCount">0</span>
+                </div>
+                <div class="tasks-list" id="todoList">
+                    <div class="empty-state">
+                        <div class="empty-icon">✨</div>
+                        <p>لا توجد مهام بعد</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doing Column -->
+            <div class="column doing" id="doing" ondrop="drop(event, 'doing')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                <div class="column-header">
+                    <div class="column-title">
+                        <div class="column-icon">⚡</div>
+                        <span>أعمل عليه</span>
+                    </div>
+                    <span class="task-count" id="doingCount">0</span>
+                </div>
+                <div class="tasks-list" id="doingList">
+                    <div class="empty-state">
+                        <div class="empty-icon">🚧</div>
+                        <p>ابدأ العمل على مهمة</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Done Column -->
+            <div class="column done" id="done" ondrop="drop(event, 'done')" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                <div class="column-header">
+                    <div class="column-title">
+                        <div class="column-icon">✅</div>
+                        <span>تم الإنجاز</span>
+                    </div>
+                    <span class="task-count" id="doneCount">0</span>
+                </div>
+                <div class="tasks-list" id="doneList">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎉</div>
+                        <p>أنجز مهمتك الأولى</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTasks">0</div>
+                    <div class="stat-label">إجمالي المهام</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedTasks">0</div>
+                    <div class="stat-label">المهام المنجزة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="progressPercent">0%</div>
+                    <div class="stat-label">نسبة الإنجاز</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="teamMembers">0</div>
+                    <div class="stat-label">أعضاء الفريق</div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-label">
+                    <span>تقدم المشروع</span>
+                    <span id="progressText">0 من 0 مهمة</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Structure
+        let tasks = {
+            todo: [],
+            doing: [],
+            done: []
+        };
+
+        let taskIdCounter = 0;
+
+        // Load data from localStorage
+        function loadData() {
+            const savedTasks = localStorage.getItem('scrumTasks');
+            const savedTeamName = localStorage.getItem('teamName');
+            const savedProjectName = localStorage.getItem('projectName');
+            const savedSprint = localStorage.getItem('sprintNumber');
+            
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+                taskIdCounter = Math.max(...Object.values(tasks).flat().map(t => t.id), 0);
+            }
+            
+            if (savedTeamName) document.getElementById('teamName').value = savedTeamName;
+            if (savedProjectName) document.getElementById('projectName').value = savedProjectName;
+            if (savedSprint) document.getElementById('sprintNumber').textContent = savedSprint;
+            
+            renderAllTasks();
+            updateStats();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('scrumTasks', JSON.stringify(tasks));
+            localStorage.setItem('teamName', document.getElementById('teamName').value);
+            localStorage.setItem('projectName', document.getElementById('projectName').value);
+            localStorage.setItem('sprintNumber', document.getElementById('sprintNumber').textContent);
+        }
+
+        // Auto-save team info
+        document.getElementById('teamName').addEventListener('change', saveData);
+        document.getElementById('projectName').addEventListener('change', saveData);
+
+        // Add Task
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const assignedTo = document.getElementById('assignedTo');
+            const priority = document.getElementById('priority');
+
+            if (taskInput.value.trim() === '') {
+                alert('الرجاء إدخال نص المهمة');
+                return;
+            }
+
+            if (assignedTo.value.trim() === '') {
+                alert('الرجاء إدخال اسم المسؤول');
+                return;
+            }
+
+            const task = {
+                id: ++taskIdCounter,
+                text: taskInput.value,
+                assigned: assignedTo.value,
+                priority: priority.value,
+                createdAt: new Date().toISOString()
+            };
+
+            tasks.todo.push(task);
+            
+            taskInput.value = '';
+            assignedTo.value = '';
+            
+            renderTasks('todo');
+            updateStats();
+            saveData();
+        }
+
+        // Render Tasks
+        function renderTasks(column) {
+            const list = document.getElementById(column + 'List');
+            list.innerHTML = '';
+
+            if (tasks[column].length === 0) {
+                const emptyMessages = {
+                    todo: { icon: '✨', text: 'لا توجد مهام بعد' },
+                    doing: { icon: '🚧', text: 'ابدأ العمل على مهمة' },
+                    done: { icon: '🎉', text: 'أنجز مهمتك الأولى' }
+                };
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">${emptyMessages[column].icon}</div>
+                        <p>${emptyMessages[column].text}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tasks[column].forEach(task => {
+                const taskCard = createTaskCard(task, column);
+                list.appendChild(taskCard);
+            });
+
+            document.getElementById(column + 'Count').textContent = tasks[column].length;
+        }
+
+        function renderAllTasks() {
+            renderTasks('todo');
+            renderTasks('doing');
+            renderTasks('done');
+        }
+
+        // Create Task Card
+        function createTaskCard(task, column) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.draggable = true;
+            card.dataset.taskId = task.id;
+            card.dataset.column = column;
+
+            const priorityLabels = {
+                high: 'عالية',
+                medium: 'متوسطة',
+                low: 'منخفضة'
+            };
+
+            const moveButtons = {
+                todo: '<button class="task-btn move-btn" onclick="moveTask(' + task.id + ', \'doing\')">ابدأ العمل ⚡</button>',
+                doing: '<button class="task-btn move-btn" onclick="moveTask(' + task.id + ', \'done\')">أنهي المهمة ✅</button>',
+                done: ''
+            };
+
+            card.innerHTML = `
+                <div class="task-header">
+                    <div class="task-title">${task.text}</div>
+                </div>
+                <div class="task-meta">
+                    <span class="task-assigned">👤 ${task.assigned}</span>
+                    <span class="task-priority priority-${task.priority}">
+                        ${priorityLabels[task.priority]}
+                    </span>
+                </div>
+                <div class="task-actions">
+                    ${moveButtons[column]}
+                    <button class="task-btn delete-btn" onclick="deleteTask(${task.id}, '${column}')">حذف 🗑️</button>
+                </div>
+            `;
+
+            // Drag events
+            card.addEventListener('dragstart', dragStart);
+            card.addEventListener('dragend', dragEnd);
+
+            return card;
+        }
+
+        // Move Task
+        function moveTask(taskId, toColumn) {
+            let fromColumn = null;
+            let taskIndex = -1;
+
+            for (let column in tasks) {
+                taskIndex = tasks[column].findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    fromColumn = column;
+                    break;
+                }
+            }
+
+            if (fromColumn && taskIndex !== -1) {
+                const task = tasks[fromColumn].splice(taskIndex, 1)[0];
+                tasks[toColumn].push(task);
+                
+                renderTasks(fromColumn);
+                renderTasks(toColumn);
+                updateStats();
+                saveData();
+            }
+        }
+
+        // Delete Task
+        function deleteTask(taskId, column) {
+            if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+                const taskIndex = tasks[column].findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    tasks[column].splice(taskIndex, 1);
+                    renderTasks(column);
+                    updateStats();
+                    saveData();
+                }
+            }
+        }
+
+        // Drag and Drop
+        let draggedElement = null;
+
+        function dragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function dragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+            return false;
+        }
+
+        function dragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(e, toColumn) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const fromColumn = draggedElement.dataset.column;
+            const taskId = parseInt(draggedElement.dataset.taskId);
+            
+            if (fromColumn !== toColumn) {
+                moveTask(taskId, toColumn);
+            }
+            
+            e.currentTarget.classList.remove('drag-over');
+            return false;
+        }
+
+        // Update Statistics
+        function updateStats() {
+            const total = tasks.todo.length + tasks.doing.length + tasks.done.length;
+            const completed = tasks.done.length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            // Get unique team members
+            const members = new Set();
+            Object.values(tasks).flat().forEach(task => members.add(task.assigned));
+
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('progressPercent').textContent = progress + '%';
+            document.getElementById('teamMembers').textContent = members.size;
+            document.getElementById('progressText').textContent = `${completed} من ${total} مهمة`;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Keyboard shortcut to add task
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addTask();
+            }
+        });
+
+        // Set default deadline (1 week from now)
+        const today = new Date();
+        const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        document.getElementById('deadline').valueAsDate = nextWeek;
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>
